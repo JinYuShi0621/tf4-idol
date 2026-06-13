@@ -746,10 +746,21 @@ function toggleCommentLike(btn, idx) {
 
 // ── 多图上传 ──
 function handleMultiPhoto(e){
-  const files=Array.from(e.target.files);const rem=9-uploadedPhotos.length;
+  const files=Array.from(e.target.files);
+  const rem=9-uploadedPhotos.length;
   if(rem<=0){showToast('最多只能选9张图片');return;}
-  const toAdd=files.slice(0,rem);let loaded=0;
-  toAdd.forEach(f=>{const r=new FileReader();r.onload=ev=>{uploadedPhotos.push(ev.target.result);loaded++;if(loaded===toAdd.length)renderPhotoGrid();};r.readAsDataURL(f);});
+  const toAdd=files.slice(0,rem);
+  let loaded=0;
+  toAdd.forEach(f=>{
+    const objUrl=URL.createObjectURL(f);
+    const r=new FileReader();
+    r.onload=ev=>{
+      uploadedPhotos.push({objUrl, base64:ev.target.result});
+      loaded++;
+      if(loaded===toAdd.length) renderPhotoGrid();
+    };
+    r.readAsDataURL(f);
+  });
   e.target.value='';
 }
 function renderPhotoGrid(){
@@ -757,13 +768,13 @@ function renderPhotoGrid(){
   grid.innerHTML='';
   const cols=count<=1?1:count===3?3:count<=4?2:3;
   grid.style.gridTemplateColumns=`repeat(${cols},1fr)`;
-  uploadedPhotos.forEach((url,i)=>{
+  uploadedPhotos.forEach((photo,i)=>{
+    const url=photo.objUrl||photo; // 兼容旧格式
     const item=document.createElement('div');
     item.className=count===1?'pg-item single':'pg-item square';
-    // 用createElement赋src，兼容手机浏览器
     const img=document.createElement('img');
     img.alt='';
-    img.style.width='100%';img.style.height='100%';img.style.objectFit=count===1?'contain':'cover';img.style.display='block';
+    img.style.cssText=`width:100%;height:100%;object-fit:${count===1?'contain':'cover'};display:block`;
     img.src=url;
     img.onclick=()=>openLightbox(i);
     const rmBtn=document.createElement('button');
@@ -779,7 +790,7 @@ function removePhoto(i,e){e.stopPropagation();uploadedPhotos.splice(i,1);renderP
 
 // ── 灯箱 ──
 let lbPhotos=[];
-function openLightbox(i){lbPhotos=uploadedPhotos;lightboxIndex=i;updateLightbox();document.getElementById('lightbox').classList.add('open');}
+function openLightbox(i){lbPhotos=uploadedPhotos.map(p=>p.objUrl||p);lightboxIndex=i;updateLightbox();document.getElementById('lightbox').classList.add('open');}
 function openLightboxFrom(urls,i){lbPhotos=urls;lightboxIndex=i;updateLightbox();document.getElementById('lightbox').classList.add('open');}
 function updateLightbox(){
   document.getElementById('lightboxImg').src=lbPhotos[lightboxIndex];
@@ -829,13 +840,14 @@ async function publishPost(){
     const wrap=document.createElement('div');wrap.style.cssText='padding:8px';
     const img=document.createElement('img');
     img.style.cssText='width:100%;height:auto;max-height:420px;object-fit:contain;border-radius:12px;background:#111;display:block;cursor:pointer';
-    img.src=uploadedPhotos[0];img.onclick=()=>openLightbox(0);
+    img.src=uploadedPhotos[0].objUrl||uploadedPhotos[0];img.onclick=()=>openLightbox(0);
     wrap.appendChild(img);imgArea.appendChild(wrap);
   }else if(uploadedPhotos.length>1){
     const cols=uploadedPhotos.length===3?3:uploadedPhotos.length<=4?2:3;
     const grid=document.createElement('div');
     grid.style.cssText=`display:grid;grid-template-columns:repeat(${cols},1fr);gap:3px;padding:8px`;
-    uploadedPhotos.forEach((url,i)=>{
+    uploadedPhotos.forEach((photo,i)=>{
+      const url=photo.objUrl||photo;
       const cell=document.createElement('div');cell.style.cssText='aspect-ratio:1;overflow:hidden;border-radius:6px;cursor:pointer';
       cell.onclick=()=>openLightbox(i);
       const img=document.createElement('img');img.style.cssText='width:100%;height:100%;object-fit:cover';
@@ -853,7 +865,7 @@ async function publishPost(){
   stream.innerHTML=`<div class="loading-comments">粉丝正在赶来评论<span class="loading-dot">.</span><span class="loading-dot">.</span><span class="loading-dot">.</span></div>`;
 
   const catLabelForAI=allCatLabels.length>0?allCatLabels[0]:'日常';
-  const savedPhotos=[...uploadedPhotos];
+  const savedPhotos=uploadedPhotos.map(p=>p.base64||p);
 
   function renderComments(aiComments){
     const commentData=aiComments.map((text,i)=>({text,likes:Math.floor(Math.random()*800+10),index:i,authorLiked:false,replies:[]}));
