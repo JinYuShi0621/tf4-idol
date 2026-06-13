@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>无数少女的真心 · TF四代爱豆模拟器</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
+:root{--bg:#0e0e12;--surface:#18181f;--surface2:#22222c;--text:#f0eef8;--text2:#a09ab8;--accent:#c8a8f0;--radius:16px;--member-color:#c8a8f0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans SC',sans-serif;min-height:100vh;overflow-x:hidden}
+.stars{position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(1px 1px at 20% 15%,#fff8 0%,transparent 100%),radial-gradient(1px 1px at 55% 30%,#fff6 0%,transparent 100%),radial-gradient(1px 1px at 80% 10%,#fff8 0%,transparent 100%),radial-gradient(1px 1px at 10% 60%,#fff5 0%,transparent 100%),radial-gradient(1px 1px at 70% 70%,#fff7 0%,transparent 100%)}
+#page-home{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:48px 20px 60px}
+.logo{font-size:13px;letter-spacing:.2em;color:var(--text2);margin-bottom:8px}
+.title{font-size:clamp(28px,7vw,48px);font-weight:900;background:linear-gradient(135deg,#e8d5ff 0%,#a8d8ff 50%,#ffd8e8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:center;line-height:1.2;margin-bottom:6px}
+.subtitle{font-size:14px;color:var(--text2);margin-bottom:40px;letter-spacing:.05em}
+.section-label{font-size:12px;letter-spacing:.15em;color:var(--text2);margin-bottom:16px;text-align:center}
+.member-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;max-width:420px;margin-bottom:32px}
+.member-card{background:var(--surface);border:2px solid transparent;border-radius:14px;padding:12px 6px;cursor:pointer;text-align:center;transition:all .25s ease}
+.member-card.selected{border-color:currentColor;transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.member-dot{width:36px;height:36px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.member-name{font-size:11px;font-weight:500;color:var(--text);line-height:1.3}
+.member-color-name{font-size:9px;color:var(--text2);margin-top:2px}
+.input-section{width:100%;max-width:340px;margin-bottom:12px}
+.input-label{font-size:12px;color:var(--text2);margin-bottom:6px;display:block}
+.fan-input{width:100%;background:var(--surface2);border:1.5px solid #333344;border-radius:12px;padding:12px 16px;color:var(--text);font-size:15px;font-family:inherit;outline:none;transition:border-color .2s}
+.fan-input:focus{border-color:var(--accent)}
+.fan-input::placeholder{color:#55556a}
+.start-btn{margin-top:28px;width:100%;max-width:340px;padding:16px;border:none;border-radius:50px;font-size:17px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .2s ease;letter-spacing:.05em;background:linear-gradient(135deg,#c8a8f0,#a8d8ff);color:#1a0a2e}
+.start-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(180,140,255,.35)}
+.start-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.hint{font-size:11px;color:var(--text2);margin-top:10px}
+#page-main{display:none;position:relative;z-index:1;min-height:100vh;flex-direction:column}
+#page-main.active{display:flex}
+.main-header{padding:20px 20px 0;display:flex;align-items:center;gap:14px}
+.avatar{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;border:2px solid}
+.header-info{flex:1}
+.header-name{font-size:20px;font-weight:900;display:flex;align-items:center;gap:8px}
+.fan-badge{font-size:11px;font-weight:500;padding:2px 10px;border-radius:20px;background:var(--surface2);color:var(--text2)}
+.online-dot{width:10px;height:10px;border-radius:50%;background:#4ade80;margin-left:auto;box-shadow:0 0 8px #4ade8088}
+.stats-row{display:flex;align-items:center;gap:8px;padding:12px 20px;font-size:13px;color:var(--text2);flex-wrap:wrap}
+.stat-chip{display:flex;align-items:center;gap:5px}
+.color-dot{width:10px;height:10px;border-radius:50%}
+.fan-count{font-size:18px;font-weight:700;color:var(--text);margin-left:auto}
+.save-btn{background:var(--surface2);border:1px solid #333344;border-radius:8px;padding:6px 12px;color:var(--text2);font-size:12px;font-family:inherit;cursor:pointer;margin-left:8px;transition:all .2s}
+.save-btn:hover{border-color:var(--member-color);color:var(--member-color)}
+.tabs{display:flex;border-bottom:1px solid #222230;margin:4px 0 0}
+.tab{flex:1;padding:14px 0;text-align:center;font-size:14px;font-weight:500;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+.tab-content{display:none;padding:0 0 80px}
+.tab-content.active{display:block}
+/* 私信 */
+.dm-list{padding:12px 16px}
+.dm-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:16px;animation:fadeUp .4s ease both}
+.dm-item-idol{display:flex;flex-direction:row-reverse;align-items:flex-start;gap:10px;margin-bottom:16px;animation:fadeUp .4s ease both}
+.dm-idol-avatar{width:40px;height:40px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.dm-avatar{width:40px;height:40px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px}
+.dm-body{flex:1}
+.dm-sender{font-size:12px;color:var(--text2);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.dm-type-badge{font-size:10px;padding:1px 7px;border-radius:10px;font-weight:500}
+.dm-bubble{background:var(--surface2);border-radius:4px 14px 14px 14px;padding:10px 14px;font-size:14px;line-height:1.5;color:var(--text)}
+.dm-quote-block{background:rgba(255,255,255,.15);border-radius:8px;padding:6px 10px;font-size:11px;margin-bottom:6px;opacity:.85}
+/* FAB */
+.dm-fab{position:fixed;bottom:24px;right:20px;width:48px;height:48px;border-radius:50%;border:none;background:var(--member-color);color:#fff;font-size:24px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.4);z-index:50;display:none;align-items:center;justify-content:center;transition:transform .2s}
+.dm-fab:hover{transform:scale(1.1)}
+.dm-fab.visible{display:flex}
+/* 浮层 */
+.overlay-base{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:60;display:none;align-items:flex-end}
+.overlay-base.open{display:flex}
+.compose-box{width:100%;background:var(--surface);border-radius:20px 20px 0 0;padding:16px}
+.compose-title{font-size:13px;color:var(--text2);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.compose-close{background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;padding:0}
+.quote-preview{background:var(--surface2);border-left:3px solid var(--member-color);border-radius:6px;padding:8px 10px;font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.5}
+.compose-input{width:100%;background:var(--surface2);border:1.5px solid #333344;border-radius:12px;padding:12px;color:var(--text);font-family:inherit;font-size:14px;resize:none;outline:none;margin-bottom:10px}
+.compose-input:focus{border-color:var(--member-color)}
+.send-btn{width:100%;padding:12px;border:none;border-radius:12px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;color:#fff;background:linear-gradient(135deg,var(--member-color),#a8d8ff88)}
+/* 长按菜单 */
+.context-menu{position:fixed;background:var(--surface);border:1px solid #333344;border-radius:12px;padding:6px 0;z-index:80;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,.5);display:none}
+.context-menu.open{display:block}
+.context-menu-item{padding:10px 16px;font-size:14px;cursor:pointer;color:var(--text)}
+.context-menu-item:hover{background:var(--surface2)}
+/* 营业 */
+.post-area{padding:16px}
+.post-card{background:var(--surface);border-radius:var(--radius);padding:16px;margin-bottom:16px}
+.post-card-title{font-size:15px;font-weight:700;margin-bottom:14px}
+.cat-hint{font-size:11px;color:var(--text2);margin-bottom:8px}
+.category-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px}
+.cat-btn{background:var(--surface2);border:1.5px solid transparent;border-radius:12px;padding:14px 6px;cursor:pointer;text-align:center;transition:all .2s;font-family:inherit}
+.cat-btn:hover{border-color:#444460}
+.cat-btn.selected{border-color:var(--member-color)}
+.cat-icon{font-size:26px;margin-bottom:4px}
+.cat-label{font-size:12px;color:var(--text2)}
+.custom-tags-wrap{margin-bottom:12px}
+.custom-tags-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;min-height:0}
+.custom-tag-pill{display:flex;align-items:center;gap:4px;background:var(--member-color)22;border:1px solid var(--member-color)66;border-radius:20px;padding:3px 10px;font-size:12px;color:var(--member-color)}
+.custom-tag-pill button{background:none;border:none;color:var(--member-color);cursor:pointer;padding:0;font-size:14px;line-height:1}
+.pinned-badge{font-size:10px;background:#fbbf2422;color:#fbbf24;border-radius:10px;padding:1px 7px;margin-left:4px}
+.custom-cat-input{width:100%;background:var(--surface2);border:1.5px solid #333344;border-radius:12px;padding:10px 12px;color:var(--text);font-family:inherit;font-size:13px;outline:none;margin-bottom:0;transition:border-color .2s}
+.custom-cat-input:focus{border-color:var(--member-color)}
+.post-text{width:100%;background:var(--surface2);border:1.5px solid #333344;border-radius:12px;padding:12px;color:var(--text);font-family:inherit;font-size:14px;resize:none;outline:none;transition:border-color .2s;margin-bottom:12px}
+.post-text:focus{border-color:var(--member-color)}
+.post-actions{display:flex;gap:10px}
+.cancel-btn{flex:1;padding:12px;background:transparent;border:1px solid #333344;border-radius:12px;color:var(--text2);font-family:inherit;font-size:14px;cursor:pointer}
+.publish-btn{flex:2;padding:12px;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;color:#fff;background:linear-gradient(135deg,var(--member-color),#a8d8ff88)}
+.publish-btn:disabled{opacity:.5;cursor:not-allowed}
+/* 多图上传 */
+.photo-upload-wrap{margin-bottom:12px}
+.photo-grid{display:grid;gap:4px;margin-bottom:8px}
+.pg-item{position:relative;border-radius:8px;overflow:hidden;cursor:pointer}
+.pg-item.square{aspect-ratio:1}
+.pg-item img{width:100%;height:100%;object-fit:cover;display:block}
+.pg-item.single img{height:auto;max-height:400px;object-fit:contain;background:#111}
+.pg-remove{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.6);border:none;color:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2}
+.photo-add-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:10px;background:var(--surface2);border:1.5px dashed #333344;border-radius:12px;color:var(--text2);font-size:13px;font-family:inherit;cursor:pointer;transition:all .2s}
+.photo-add-btn:hover{border-color:var(--member-color);color:var(--text)}
+/* 灯箱 */
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:300;display:none;align-items:center;justify-content:center}
+.lightbox.open{display:flex}
+.lightbox img{max-width:95vw;max-height:90vh;object-fit:contain;border-radius:8px}
+.lightbox-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.lightbox-nav{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:none;color:#fff;width:40px;height:40px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.lightbox-prev{left:12px}
+.lightbox-next{right:12px}
+.lightbox-counter{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.7);font-size:13px}
+/* 发布结果 */
+.post-result{background:var(--surface);border-radius:var(--radius);overflow:hidden;margin-bottom:16px}
+.post-status{background:var(--surface);border:1px solid #333344;border-radius:10px;padding:10px 16px;font-size:13px;text-align:center;color:var(--text);margin:8px 16px}
+.post-stats-row{display:flex;gap:20px;padding:10px 16px 14px;font-size:13px;color:var(--text2)}
+/* 评论 */
+.comment-stream{padding:0 16px}
+.comment-sort-bar{display:flex;align-items:center;gap:6px;padding:8px 0 10px;font-size:12px;color:var(--text2)}
+.sort-btn{background:none;border:1px solid #333344;border-radius:20px;padding:3px 10px;font-size:11px;color:var(--text2);font-family:inherit;cursor:pointer;transition:all .15s}
+.sort-btn.active{border-color:var(--member-color);color:var(--member-color);background:var(--member-color)11}
+.comment-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:14px;animation:fadeUp .3s ease both}
+.comment-avatar{width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px}
+.comment-body{flex:1;min-width:0}
+.comment-sender{font-size:11px;color:var(--text2);margin-bottom:3px;display:flex;align-items:center;gap:5px;flex-wrap:nowrap;width:100%}
+.comment-floor{font-size:10px;color:#55556a;flex-shrink:0}
+.author-liked-badge{font-size:10px;background:#f472b622;color:#f472b6;border-radius:10px;padding:1px 7px;flex-shrink:0;white-space:nowrap}
+.comment-text{font-size:13px;line-height:1.5;margin-bottom:6px}
+.comment-actions{display:flex;align-items:center;gap:14px;margin-top:2px}
+.comment-like-btn{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text2);cursor:pointer;background:none;border:none;font-family:inherit;padding:0;transition:all .15s}
+.comment-like-btn:hover{color:#f472b6}
+.comment-like-btn.liked{color:#f472b6;font-weight:600}
+@keyframes heartPop{0%{transform:scale(1)}50%{transform:scale(1.4)}100%{transform:scale(1)}}
+.comment-like-btn.liked .like-heart{animation:heartPop .3s ease}
+.comment-reply-btn{font-size:12px;color:var(--text2);cursor:pointer;background:none;border:none;font-family:inherit;padding:0}
+.comment-reply-btn:hover{color:var(--text)}
+.comment-reply-area{margin-top:8px;margin-left:46px;border-left:2px solid #222230;padding-left:10px}
+.comment-reply-item{font-size:12px;margin-bottom:6px;line-height:1.6;color:var(--text)}
+.comment-reply-name{color:var(--member-color);font-weight:600;margin-right:4px}
+.loading-comments{text-align:center;padding:16px;color:var(--text2);font-size:13px}
+.loading-dot{display:inline-block;animation:blink 1s infinite}
+.loading-dot:nth-child(2){animation-delay:.2s}
+.loading-dot:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:0}40%{opacity:1}}
+/* 历史营业详情 */
+#page-history-detail{display:none;position:fixed;inset:0;background:var(--bg);z-index:110;overflow-y:auto;flex-direction:column}
+#page-history-detail.open{display:flex}
+.hd-header{display:flex;align-items:center;gap:12px;padding:16px;border-bottom:1px solid #222230;position:sticky;top:0;background:var(--bg);z-index:10;flex-shrink:0}
+.hd-post-body{padding:16px;border-bottom:1px solid #1a1a24}
+.hd-comments{flex:1;padding-bottom:80px}
+.history-btn{display:flex;align-items:center;gap:6px;margin:10px 16px 0;padding:10px 14px;background:var(--surface);border:1px solid #333344;border-radius:12px;color:var(--text2);font-size:13px;font-family:inherit;cursor:pointer;transition:all .2s;width:calc(100% - 32px)}
+.history-btn:hover{border-color:var(--member-color);color:var(--text)}
+#page-history{display:none;position:fixed;inset:0;background:var(--bg);z-index:100;overflow-y:auto}
+.history-header{display:flex;align-items:center;gap:12px;padding:16px;border-bottom:1px solid #222230;position:sticky;top:0;background:var(--bg);z-index:10}
+.history-back{background:var(--surface2);border:none;border-radius:8px;padding:7px 14px;color:var(--text);font-family:inherit;font-size:14px;cursor:pointer}
+.history-item{border-bottom:1px solid #1a1a24;padding:16px}
+.history-item-img{width:100%;max-height:300px;object-fit:contain;border-radius:10px;background:#111;display:block;margin-bottom:10px;cursor:pointer}
+.history-item-emoji{font-size:48px;text-align:center;padding:20px 0}
+.history-item-caption{font-size:14px;line-height:1.6;margin-bottom:8px}
+.history-item-meta{font-size:12px;color:var(--text2);display:flex;gap:14px;margin-bottom:10px}
+.history-top-comment{background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:13px;border-left:3px solid var(--member-color)}
+.history-top-label{font-size:11px;color:var(--text2);margin-bottom:4px}
+.history-empty{text-align:center;padding:60px 20px;color:var(--text2);font-size:14px}
+/* 口号 */
+.slogan-area{padding:24px 16px;text-align:center}
+.slogan-card{background:var(--surface);border-radius:20px;padding:32px 20px;margin-bottom:16px;position:relative;overflow:hidden}
+.slogan-deco{position:absolute;font-size:80px;opacity:.06;top:-10px;right:-10px;line-height:1}
+.slogan-label{font-size:12px;color:var(--text2);letter-spacing:.1em;margin-bottom:16px}
+.slogan-text{font-size:22px;font-weight:900;line-height:1.6;color:var(--member-color);margin-bottom:8px}
+.slogan-sub{font-size:13px;color:var(--text2);line-height:1.7}
+/* Toast */
+.toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.9);background:rgba(30,30,40,.95);border:1px solid #333344;border-radius:14px;padding:14px 28px;font-size:15px;color:#fff;z-index:200;opacity:0;pointer-events:none;transition:all .2s ease;white-space:nowrap}
+.toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+@keyframes countUp{from{transform:translateY(4px);opacity:0}to{transform:translateY(0);opacity:1}}
+.count-anim{animation:countUp .3s ease}
+</style>
+</head>
+<body>
+<div class="stars"></div>
+<div class="toast" id="toast"></div>
+
+<!-- 首页 -->
+<div id="page-home">
+  <p class="logo">T-FAMILY 四代</p>
+  <h1 class="title">✦ 无数少女的真心</h1>
+  <p class="subtitle">爱豆模拟器 · 四代限定版</p>
+  <p class="section-label">✦ 选择你的少年 ✦</p>
+  <div class="member-grid" id="memberGrid"></div>
+  <div class="input-section">
+    <label class="input-label">你的粉丝名（不填自动生成）</label>
+    <input class="fan-input" id="fanNameInput" placeholder="输入粉丝名…" maxlength="10">
+  </div>
+  <button class="start-btn" id="startBtn" disabled onclick="startGame()">请先选择一位少年</button>
+  <p class="hint">口号会根据少年的名字生成哦</p>
+</div>
+
+<!-- 主页 -->
+<div id="page-main">
+  <div class="main-header">
+    <div class="avatar" id="mainAvatar"></div>
+    <div class="header-info"><div class="header-name" id="mainName"></div></div>
+    <div class="online-dot"></div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-chip"><div class="color-dot" id="colorDot"></div><span id="colorName">—</span></div>
+    <span>粉丝名</span><span id="displayFanName" style="color:#f0eef8;font-weight:600">—</span>
+    <span>在线</span><span class="fan-count" id="fanCount">0</span>
+    <button class="save-btn" onclick="saveArchive()">💾 存档</button>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('dm',this)">💬 私信</div>
+    <div class="tab" onclick="switchTab('post',this)">📸 营业</div>
+    <div class="tab" onclick="switchTab('slogan',this)">📣 口号</div>
+  </div>
+  <div class="tab-content active" id="tab-dm">
+    <div class="dm-list" id="dmList"></div>
+  </div>
+  <div class="tab-content" id="tab-post">
+    <div class="post-area">
+      <button class="history-btn" onclick="openHistory()">📋 历史营业 <span id="historyCount" style="margin-left:auto;font-size:11px">暂无记录</span></button>
+      <div class="post-card" id="postForm" style="margin-top:12px">
+        <div class="post-card-title">📸 发营业照</div>
+        <textarea class="post-text" id="postCaption" rows="3" placeholder="说点什么…（可以不填）"></textarea>
+        <div class="photo-upload-wrap">
+          <div class="photo-grid" id="photoGrid"></div>
+          <button class="photo-add-btn" id="photoAddBtn" onclick="document.getElementById('photoFileInput').click()">
+            <input type="file" id="photoFileInput" accept="image/*" multiple onchange="handleMultiPhoto(event)" style="display:none">
+            🖼️ 添加图片（最多9张）
+          </button>
+        </div>
+        <p class="cat-hint">选择类别（可不选 / 可多选）</p>
+        <div class="category-grid" id="categoryGrid"></div>
+        <div class="custom-tags-wrap">
+          <p class="cat-hint" style="margin-bottom:6px">自定义标签（最多5个，按回车或逗号添加）</p>
+          <div class="custom-tags-row" id="customTagsRow"></div>
+          <input class="custom-cat-input" id="customCatInput" placeholder="✏️ 输入标签后按回车…" maxlength="10">
+        </div>
+        <div class="post-actions">
+          <button class="cancel-btn" onclick="resetPost()">取消</button>
+          <button class="publish-btn" id="publishBtn" onclick="publishPost()">发布 ✨</button>
+        </div>
+      </div>
+      <div id="postResult" style="display:none"></div>
+      <div class="comment-stream" id="commentStream"></div>
+    </div>
+  </div>
+  <div class="tab-content" id="tab-slogan">
+    <div class="slogan-area" id="sloganArea"></div>
+  </div>
+</div>
+
+<!-- 灯箱 -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <button class="lightbox-close" onclick="document.getElementById('lightbox').classList.remove('open')">×</button>
+  <button class="lightbox-nav lightbox-prev" onclick="lightboxNav(-1,event)">‹</button>
+  <img id="lightboxImg" src="" alt="">
+  <button class="lightbox-nav lightbox-next" onclick="lightboxNav(1,event)">›</button>
+  <div class="lightbox-counter" id="lightboxCounter"></div>
+</div>
+
+<!-- 历史营业详情 -->
+<div id="page-history-detail">
+  <div class="hd-header">
+    <button class="history-back" onclick="closeHistoryDetail()">← 返回</button>
+    <span style="font-size:15px;font-weight:700">营业详情</span>
+  </div>
+  <div class="hd-post-body" id="hdPostBody"></div>
+  <div class="hd-comments" id="hdComments"></div>
+</div>
+
+<!-- 历史营业 -->
+<div id="page-history">
+  <div class="history-header">
+    <button class="history-back" onclick="closeHistory()">← 返回</button>
+    <span style="font-size:16px;font-weight:700">历史营业</span>
+  </div>
+  <div id="historyList"></div>
+</div>
+
+<!-- FAB -->
+<button class="dm-fab" id="dmFab" onclick="openDmCompose(null)">＋</button>
+
+<!-- 私信发送浮层 -->
+<div class="overlay-base" id="dmComposeOverlay" onclick="if(event.target===this)closeDmCompose()">
+  <div class="compose-box">
+    <div class="compose-title">
+      <span id="dmComposeTitle">📢 向所有粉丝广播</span>
+      <button class="compose-close" onclick="closeDmCompose()">×</button>
+    </div>
+    <div id="dmQuotePreview" style="display:none" class="quote-preview"></div>
+    <textarea class="compose-input" id="dmComposeInput" rows="3" placeholder="说点什么…"></textarea>
+    <button class="send-btn" onclick="sendDmMessage()">发送 💬</button>
+  </div>
+</div>
+
+<!-- 评论回复浮层 -->
+<div class="overlay-base" id="replyComposeOverlay" onclick="if(event.target===this)closeReplyCompose()">
+  <div class="compose-box">
+    <div class="compose-title">
+      <span>↩️ 回复这条评论</span>
+      <button class="compose-close" onclick="closeReplyCompose()">×</button>
+    </div>
+    <div id="replyQuotePreview" class="quote-preview"></div>
+    <textarea class="compose-input" id="replyComposeInput" rows="2" placeholder="回复…"></textarea>
+    <button class="send-btn" onclick="sendReply()">回复 ↩️</button>
+  </div>
+</div>
+
+<!-- 长按菜单 -->
+<div class="context-menu" id="contextMenu">
+  <div class="context-menu-item" id="ctxAction">💬 引用回复</div>
+  <div class="context-menu-item" id="ctxPin" style="display:none">📌 置顶评论</div>
+  <div class="context-menu-item" onclick="closeContextMenu()">取消</div>
+</div>
+
+<script>
+const MEMBERS=[
+  {name:'官俊臣',color:'#985FAB',colorName:'扶光织梦',animal:'🦦',fans:'烟粉'},
+  {name:'张桂源',color:'#F9E511',colorName:'向阳而生',animal:'☀️',fans:'桂圆'},
+  {name:'张函瑞',color:'#8AAEA2',colorName:'祈漫春江',animal:'🌿',fans:'Every'},
+  {name:'王橹杰',color:'#4ab7cc',colorName:'碧玉澜诗',animal:'🦌',fans:'Lumos'},
+  {name:'王烁然',color:'#A42423',colorName:'玄夜烁焰',animal:'🦭',fans:'烁星'},
+  {name:'左奇函',color:'#10319F',colorName:'深海霁蓝',animal:'🦔',fans:'小刺猬'},
+  {name:'陈奕恒',color:'#C1a1ca',colorName:'风铃信纸',animal:'🔔',fans:'信纸'},
+  {name:'杨博文',color:'#F4A9AA',colorName:'绯玉晨曦',animal:'🌸',fans:'晨曦'},
+  {name:'杨涵博',color:'#FE007F',colorName:'湘菡鹤樨',animal:'🌺',fans:'鹤粉'},
+  {name:'张奕然',color:'#FF952D',colorName:'羽奕燃橙',animal:'🥥',fans:'椰蓉'},
+  {name:'聂玮辰',color:'#0f2eac',colorName:'泉巷辰梦',animal:'🫧',fans:'维C'},
+  {name:'陈思罕',color:'#4CE8CC',colorName:'青芽暖茶',animal:'🦊',fans:'罕妮'},
+  {name:'魏子宸',color:'#B3BFD5',colorName:'雾海宸光',animal:'🌫️',fans:'星宸'},
+  {name:'李煜东',color:'#B54F48',colorName:'东煜暖阳',animal:'🌤️',fans:'暖阳'},
+];
+const DM_TYPES=[{type:'梦女',color:'#f472b6'},{type:'甜甜',color:'#fb923c'},{type:'高甜',color:'#a78bfa'},{type:'妈粉',color:'#60a5fa'},{type:'事业粉',color:'#34d399'},{type:'一体机',color:'#e879f9'},{type:'抚慰',color:'#94a3b8'}];
+const DM_POOL=[
+  ['世界那么大我只看得见你','看到你的消息脸都红了'],['别来沾边','你的对手只有你自己'],
+  ['你一笑世界都甜了','甜到我心里了！甜甜的宝'],['谁敢说他一句试试','他值得被全世界温柔以待！我可怜的宝'],
+  ['你的小猫咪','你的小枕头！藏在被窝想你'],['你要照顾好自己妈妈才放心','妈妈好想你好想你！早点睡宝'],
+  ['你站着就是舞台','今天的你也很好看对吧！光是看到你就开心'],['你的感受很重要不要忽略它','今天被同事气到了但看到你的消息瞬间消气'],
+  ['你辛苦了','没关系的，允许自己偶尔低落'],['你是被爱的','明天会更好的'],
+  ['不许任何人拉踩你','好看得我想哭'],['你眨眼了啊啊啊','颜值暴击！'],
+  ['天赋加努力才是正道','镜头感绝了'],['全世界最心疼你','你怎么每天都这么好看！'],
+  ['沉淀才能爆发','镜头感绝了'],['想被你看看','我的眼睛被净化了'],
+  ['你是我的氧气不是比喻是事实','好看得我想哭'],['又心疼又心动 我到底怎么了','我的眼睛被净化了'],
+];
+const CATEGORIES=[{icon:'🤳',label:'自拍'},{icon:'🍜',label:'美食'},{icon:'🎤',label:'舞台'},{icon:'👗',label:'穿搭'},{icon:'🏖️',label:'旅行'},{icon:'🐾',label:'宠物'},{icon:'💪',label:'健身'},{icon:'📖',label:'读书'},{icon:'🌙',label:'深夜'}];
+const SLOGANS={
+  '官俊臣':['踏破晨雾官俊臣，扶光织梦少年心','光芒从山城升起，梦想因你而生长'],
+  '张桂源':['向阳而生张桂源，温暖如日照万年','桂圆甜甜最可爱，向日葵般灿烂开'],
+  '张函瑞':['祈漫春江张函瑞，歌声穿越山与海','春水长流函瑞在，肆意少年向未来'],
+  '王橹杰':['踏星摘月王橹杰，壮志凌云意少年','碧玉温润澜诗远，橹杰一鸣惊天地'],
+  '王烁然':['玄夜烁焰王烁然，音符化作星河燃','烁星闪耀夜无边，少年才气照人间'],
+  '左奇函':['深海霁蓝左奇函，风雨过后天更宽','蓝色宇宙奇函在，肆意少年破浪来'],
+  '陈奕恒':['风铃信纸陈奕恒，远方的爱寄来温','紫色风铃轻轻响，奕恒歌声暖心房'],
+  '杨博文':['绯玉晨曦杨博文，舞台圣体震乾坤','晨光初照博文来，舞步翩翩最精彩'],
+  '杨涵博':['湘菡鹤樨杨涵博，独特风采无可替','粉色盛开涵博至，鹤立鸡群最耀眼'],
+  '张奕然':['羽奕燃橙张奕然，橙色活力点燃天','椰蓉甜甜奕然来，活力四射最精彩'],
+  '聂玮辰':['泉巷辰梦聂玮辰，彩虹色彩最迷人','水波荡漾辰梦远，少年前路宽又宽'],
+  '陈思罕':['青芽暖茶陈思罕，新生活力不怕难','思罕出发破苍穹，吉他弦上梦无穷'],
+  '魏子宸':['雾海宸光魏子宸，迷雾中的那盏灯','灰蓝星光宸儿在，静静发光最闪亮'],
+  '李煜东':['东煜暖阳李煜东，温而不灼照心中','晨曦初升煜东来，温润如玉最精彩'],
+};
+const FAN_NICKNAMES={
+  '陈思罕':['罕妮01','深圳追罕人','小狐狸迷','憨罕饭','锁骨痣粉','草莓控罕迷','1108守护者','萌罕药粉','思思的粉','法王应援团','比格粉丝','罕家小狗','chen真爱粉','草莓冰淇淋控','深圳男孩粉','罕见迷妹'],
+  'default':['甜甜的粉','真爱粉01','迷妹本妹','超级粉丝','追星少女','应援团成员','真心粉','永远支持你','小迷妹'],
+};
+const COMMENT_TYPES=[{type:'高甜',color:'#a78bfa'},{type:'梦女',color:'#f472b6'},{type:'事业粉',color:'#34d399'},{type:'妈粉',color:'#60a5fa'},{type:'甜甜',color:'#fb923c'},{type:'抚慰',color:'#94a3b8'},{type:'一体机',color:'#e879f9'}];
+const COMMENT_AVATARS=['🌸','⚡','🎀','🌻','🌊','🎵','☁️','🍬','🌙','🔔','🦋','🍀'];
+const AVATAR_COLORS=['#f472b6','#fb923c','#a78bfa','#60a5fa','#34d399','#fbbf24','#e879f9','#94a3b8'];
+
+let selectedMember=null,fanName='',fanCount=0;
+let selectedCategories=[],dmInterval=null,commentInterval=null;
+let uploadedPhotos=[],lightboxIndex=0;
+let postHistory=[];
+let dmQuoteText=null,replyTargetEl=null,contextType=null,contextTarget=null;
+let longPressTimer=null;
+let customTags=[]; // 自定义标签数组
+
+function addCustomTag(val){
+  val=val.trim().replace(/^#/,'');
+  if(!val||customTags.length>=5||customTags.includes(val))return;
+  customTags.push(val);
+  renderCustomTags();
+}
+function removeCustomTag(i){
+  customTags.splice(i,1);
+  renderCustomTags();
+}
+function renderCustomTags(){
+  const row=document.getElementById('customTagsRow');
+  if(!row)return;
+  row.innerHTML=customTags.map((t,i)=>`<span class="custom-tag-pill">#${t}<button onclick="removeCustomTag(${i})">×</button></span>`).join('');
+  const input=document.getElementById('customCatInput');
+  if(input)input.style.display=customTags.length>=5?'none':'block';
+}
+function initCustomTagInput(){
+  const input=document.getElementById('customCatInput');
+  if(!input)return;
+  input.addEventListener('keydown',(e)=>{
+    if(e.key==='Enter'||e.key===','||e.key==='，'){
+      e.preventDefault();
+      addCustomTag(input.value);
+      input.value='';
+    }
+  });
+  input.addEventListener('blur',()=>{
+    if(input.value.trim()){addCustomTag(input.value);input.value='';}
+  });
+}
+
+function getFanNickname(i){
+  const names=FAN_NICKNAMES[selectedMember?.name]||FAN_NICKNAMES['default'];
+  return names[i%names.length];
+}
+function generateFanName(m){return m.name==='陈思罕'?'罕妮':m.fans;}
+function isLight(hex){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return(r*299+g*587+b*114)/1000>160;}
+
+function showToast(msg,dur=2500){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+function saveArchive(){
+  try{
+    // 保存完整游戏状态（图片dataUrl可能很大，只保存文字部分）
+    const saveData={
+      memberName:selectedMember?.name,
+      fanName,fanCount,
+      postHistory:postHistory.map(p=>({
+        ...p,
+        // 图片dataUrl太大，转成占位符
+        imageUrls:p.imageUrls?p.imageUrls.map((_,i)=>`__img_${i}__`):[]
+      }))
+    };
+    // 单独保存图片
+    postHistory.forEach((p,pi)=>{
+      if(p.imageUrls)p.imageUrls.forEach((url,ii)=>{
+        try{localStorage.setItem(`tf4_img_${pi}_${ii}`,url);}catch(e){}
+      });
+    });
+    localStorage.setItem('tf4_save',JSON.stringify(saveData));
+    showToast('💾 存档成功！');
+  }catch(e){
+    showToast('💾 存档失败（可能是图片太大）');
+  }
+}
+
+function loadArchive(){
+  try{
+    const raw=localStorage.getItem('tf4_save');
+    if(!raw)return false;
+    const saveData=JSON.parse(raw);
+    if(!saveData.memberName)return false;
+    // 恢复成员
+    const mi=MEMBERS.findIndex(m=>m.name===saveData.memberName);
+    if(mi<0)return false;
+    selectedMember=MEMBERS[mi];
+    fanName=saveData.fanName||generateFanName(selectedMember);
+    fanCount=saveData.fanCount||0;
+    // 恢复历史营业（含图片）
+    postHistory=(saveData.postHistory||[]).map((p,pi)=>({
+      ...p,
+      imageUrls:(p.imageUrls||[]).map((placeholder,ii)=>{
+        if(typeof placeholder==='string'&&placeholder.startsWith('__img_')){
+          return localStorage.getItem(`tf4_img_${pi}_${ii}`)||'';
+        }
+        return placeholder;
+      }).filter(Boolean)
+    }));
+    return true;
+  }catch(e){return false;}
+}
+
+function initMemberGrid(){
+  const grid=document.getElementById('memberGrid');
+  MEMBERS.forEach((m,i)=>{
+    const card=document.createElement('div');card.className='member-card';card.style.color=m.color;
+    card.innerHTML=`<div class="member-dot" style="background:${m.color}22;border:1.5px solid ${m.color}55">${m.animal}</div><div class="member-name">${m.name}</div><div class="member-color-name">${m.colorName}</div>`;
+    card.onclick=()=>selectMember(i,card);grid.appendChild(card);
+  });
+}
+function selectMember(i,card){
+  document.querySelectorAll('.member-card').forEach(c=>{c.classList.remove('selected');c.style.background='';});
+  card.classList.add('selected');card.style.background=`linear-gradient(135deg,${MEMBERS[i].color}18,#18181f)`;
+  selectedMember=MEMBERS[i];
+  const btn=document.getElementById('startBtn');btn.disabled=false;btn.textContent='开始营业 ✨';
+  btn.style.background=`linear-gradient(135deg,${selectedMember.color},${selectedMember.color}88)`;
+  btn.style.color=isLight(selectedMember.color)?'#1a1a1a':'#fff';
+}
+function startGame(){
+  if(!selectedMember)return;
+  fanName=document.getElementById('fanNameInput').value.trim()||generateFanName(selectedMember);
+  fanCount=Math.floor(Math.random()*80000)+10000;
+  document.getElementById('page-home').style.display='none';
+  const main=document.getElementById('page-main');main.style.display='flex';
+  document.documentElement.style.setProperty('--member-color',selectedMember.color);
+  const av=document.getElementById('mainAvatar');av.textContent=selectedMember.animal;av.style.background=selectedMember.color+'22';av.style.borderColor=selectedMember.color;
+  document.getElementById('mainName').innerHTML=`${selectedMember.name}<span class="fan-badge">${fanName}</span>`;
+  document.getElementById('colorDot').style.background=selectedMember.color;
+  document.getElementById('colorName').textContent=selectedMember.colorName;
+  document.getElementById('displayFanName').textContent=fanName;
+  document.getElementById('fanCount').textContent=fanCount.toLocaleString();
+  const activeTab=document.querySelector('.tab.active');activeTab.style.borderBottomColor=selectedMember.color;activeTab.style.color=selectedMember.color;
+  document.getElementById('dmFab').classList.add('visible');
+  initDmTab();initPostTab();initSloganTab();
+  initCustomTagInput();
+}
+function switchTab(name,el){
+  document.querySelectorAll('.tab').forEach(t=>{t.classList.remove('active');t.style.borderBottomColor='transparent';t.style.color='';});
+  el.classList.add('active');el.style.borderBottomColor=selectedMember.color;el.style.color=selectedMember.color;
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+}
+function updateFanCount(){
+  const el=document.getElementById('fanCount');el.textContent=fanCount.toLocaleString();
+  el.classList.remove('count-anim');void el.offsetWidth;el.classList.add('count-anim');
+}
+
+// ── 私信 ──
+function initDmTab(){
+  const list=document.getElementById('dmList');list.innerHTML='';
+  // column-reverse让最新的（appendChild的）显示在最上面
+  list.style.display='flex';list.style.flexDirection='column-reverse';list.style.paddingBottom='8px';
+  const emos=['🌸','⚡','🍬','🔔','☁️','🎀','🌙','🌻','🌊','🎵'];
+  let shown=0;
+  function addDm(){
+    if(shown>=DM_POOL.length){clearInterval(dmInterval);return;}
+    const[sender,msg]=DM_POOL[shown];
+    const typeObj=DM_TYPES[Math.floor(Math.random()*DM_TYPES.length)];
+    const c=AVATAR_COLORS[shown%AVATAR_COLORS.length];
+    const item=document.createElement('div');item.className='dm-item';
+    item.innerHTML=`<div class="dm-avatar" style="background:${c}22">${emos[shown%emos.length]}</div><div class="dm-body"><div class="dm-sender">${getFanNickname(shown)}<span class="dm-type-badge" style="background:${typeObj.color}22;color:${typeObj.color}">${typeObj.type}</span></div><div class="dm-bubble">${msg}</div></div>`;
+    list.appendChild(item);
+    bindLongPress(item,(e)=>{const t=e.touches?.[0]||e;showContextMenu(t.clientX,t.clientY,'dm',msg,item);});
+    shown++;fanCount+=Math.floor(Math.random()*500+100);updateFanCount();
+  }
+  for(let i=0;i<4;i++)addDm();
+  dmInterval=setInterval(addDm,1800);
+}
+
+// ── FAB & 私信发送 ──
+function openDmCompose(quoteText){
+  dmQuoteText=quoteText||null;
+  const p=document.getElementById('dmQuotePreview');
+  if(quoteText){document.getElementById('dmComposeTitle').textContent='↩️ 引用回复（全员可见）';p.style.display='block';p.textContent='引用：'+quoteText;}
+  else{document.getElementById('dmComposeTitle').textContent='📢 向所有粉丝广播';p.style.display='none';}
+  document.getElementById('dmComposeInput').value='';
+  document.getElementById('dmComposeOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('dmComposeInput').focus(),100);
+}
+function closeDmCompose(){document.getElementById('dmComposeOverlay').classList.remove('open');}
+function sendDmMessage(){
+  const text=document.getElementById('dmComposeInput').value.trim();if(!text)return;
+  const list=document.getElementById('dmList');
+  const item=document.createElement('div');item.className='dm-item-idol';
+  const tc=isLight(selectedMember.color)?'#111':'#fff';
+  item.innerHTML=`<div class="dm-idol-avatar" style="background:${selectedMember.color}22;border:1.5px solid ${selectedMember.color}">${selectedMember.animal}</div><div style="max-width:78%"><div style="font-size:11px;color:var(--text2);margin-bottom:4px;text-align:right">${selectedMember.name} · 刚刚</div>${dmQuoteText?`<div class="dm-quote-block" style="color:${tc}">引用：${dmQuoteText}</div>`:''}<div style="background:${selectedMember.color};border-radius:14px 4px 14px 14px;padding:10px 14px;font-size:14px;line-height:1.5;color:${tc}">${text}</div></div>`;
+  list.appendChild(item);
+  closeDmCompose();dmQuoteText=null;
+}
+
+// ── 长按菜单 ──
+function bindLongPress(el,cb){
+  el.addEventListener('touchstart',(e)=>{longPressTimer=setTimeout(()=>cb(e),500);},{passive:true});
+  el.addEventListener('touchend',()=>clearTimeout(longPressTimer));
+  el.addEventListener('touchmove',()=>clearTimeout(longPressTimer));
+  el.addEventListener('contextmenu',(e)=>{e.preventDefault();cb(e);});
+}
+let pinnedIdx=null; // 当前置顶的评论index
+
+function showContextMenu(x,y,type,txt,target){
+  contextType=type;contextTarget=txt;replyTargetEl=target;
+  const menu=document.getElementById('contextMenu');
+  const action=document.getElementById('ctxAction');
+  const pinBtn=document.getElementById('ctxPin');
+  action.textContent=type==='dm'?'💬 引用回复（全员可见）':'↩️ 回复这条评论';
+  action.onclick=()=>{closeContextMenu();type==='dm'?openDmCompose(txt):openReplyCompose(txt,target);};
+  // 评论才显示置顶
+  if(type==='comment'&&target){
+    pinBtn.style.display='block';
+    const idx=parseInt(target.dataset.idx);
+    const isAlreadyPinned=pinnedIdx===idx;
+    pinBtn.textContent=isAlreadyPinned?'📌 取消置顶':'📌 置顶评论';
+    pinBtn.onclick=()=>{
+      closeContextMenu();
+      pinnedIdx=isAlreadyPinned?null:idx;
+      renderCommentList();
+      showToast(isAlreadyPinned?'已取消置顶':'📌 置顶成功！',1500);
+    };
+  }else{
+    pinBtn.style.display='none';
+  }
+  menu.style.left=Math.min(x,window.innerWidth-170)+'px';menu.style.top=Math.min(y,window.innerHeight-100)+'px';
+  menu.classList.add('open');
+  setTimeout(()=>document.addEventListener('click',closeContextMenu,{once:true}),10);
+}
+function closeContextMenu(){document.getElementById('contextMenu').classList.remove('open');}
+
+// ── 评论回复 ──
+function openReplyCompose(txt,target){
+  replyTargetEl=target;document.getElementById('replyQuotePreview').textContent=txt;
+  document.getElementById('replyComposeInput').value='';
+  document.getElementById('replyComposeOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('replyComposeInput').focus(),100);
+}
+function closeReplyCompose(){document.getElementById('replyComposeOverlay').classList.remove('open');}
+function sendReply(){
+  const text=document.getElementById('replyComposeInput').value.trim();if(!text||!replyTargetEl)return;
+  const idx=parseInt(replyTargetEl.dataset.idx);
+  // 保存回复到数据
+  if(window._commentData&&window._commentData[idx]){
+    window._commentData[idx].replies=window._commentData[idx].replies||[];
+    window._commentData[idx].replies.push({name:selectedMember.name,text});
+  }
+  closeReplyCompose();
+  renderCommentList();
+}
+
+// ── 点赞 ──
+function renderCommentListEl(source, listEl) {
+  if (!listEl || !source) return;
+  const sorted = [...source];
+  if (window._currentSort === 'likes') {
+    sorted.sort((a, b) => b.likes - a.likes);
+  } else {
+    sorted.sort((a, b) => a.index - b.index);
+  }
+  listEl.innerHTML = '';
+  sorted.forEach((d, floor) => {
+    const c = AVATAR_COLORS[d.index % AVATAR_COLORS.length];
+    const typeObj = COMMENT_TYPES[d.index % COMMENT_TYPES.length];
+    const item = document.createElement('div');
+    item.className = 'comment-item';
+    item.dataset.idx = d.index;
+    const replyHTML = d.replies && d.replies.length > 0
+      ? d.replies.map(r => `<div class="comment-reply-item"><span class="comment-reply-name">${r.name}</span>回复：${r.text}</div>`).join('')
+      : '';
+    item.innerHTML = `
+      <div class="comment-avatar" style="background:${c}22">${COMMENT_AVATARS[d.index % COMMENT_AVATARS.length]}</div>
+      <div class="comment-body">
+        <div class="comment-sender">
+          <span>${getFanNickname(d.index)}</span>
+          <span class="dm-type-badge" style="background:${c}22;color:${c}">${typeObj.type}</span>
+          <span class="comment-floor">第${floor + 1}楼</span>
+        </div>
+        <div class="comment-text">${d.text}${d.authorLiked ? ' <span class="author-liked-badge">作者赞过</span>' : ''}</div>
+        <div class="comment-actions">
+          <button class="comment-like-btn ${d.authorLiked ? 'liked' : ''}" onclick="toggleCommentLike(this,${d.index})">
+            <span class="like-heart">${d.authorLiked ? '❤️' : '🤍'}</span>
+            <span class="like-count">${d.likes}</span>
+          </button>
+          <button class="comment-reply-btn" onclick="openReplyCompose('${d.text.replace(/'/g,"\\'")}',this.closest('.comment-item'))">↩ 回复</button>
+        </div>
+        ${replyHTML ? `<div class="comment-reply-area">${replyHTML}</div>` : ''}
+      </div>`;
+    listEl.appendChild(item);
+    bindLongPress(item, (e) => { const t = e.touches?.[0] || e; showContextMenu(t.clientX, t.clientY, 'comment', d.text, item); });
+  });
+}
+
+function setCommentSort(mode, btn) {
+  window._currentSort = mode;
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCommentList();
+}
+
+function renderCommentList(data, listElId) {
+  const listEl = document.getElementById(listElId || 'commentList');
+  if (!listEl) return;
+  const source = data || window._commentData;
+  if (!source) return;
+  const sorted = [...source];
+  if (window._currentSort === 'likes') {
+    sorted.sort((a, b) => b.likes - a.likes);
+  } else {
+    sorted.sort((a, b) => a.index - b.index);
+  }
+  // 保留已有回复
+  const existingReplies = {};
+  listEl.querySelectorAll('.comment-item').forEach(item => {
+    const area = item.querySelector('.comment-reply-area');
+    if (area) existingReplies[item.dataset.idx] = area.innerHTML;
+  });
+  // 置顶评论移到最前
+  if(pinnedIdx!=null){
+    const pi=sorted.findIndex(d=>d.index===pinnedIdx);
+    if(pi>0){const[pd]=sorted.splice(pi,1);sorted.unshift(pd);}
+  }
+  listEl.innerHTML = '';
+  sorted.forEach((d, floor) => {
+    const isPinned = pinnedIdx===d.index;
+    const c = AVATAR_COLORS[d.index % AVATAR_COLORS.length];
+    const typeObj = COMMENT_TYPES[d.index % COMMENT_TYPES.length];
+    const item = document.createElement('div');
+    item.className = 'comment-item';
+    item.dataset.idx = d.index;
+    // 回复：优先用data里保存的，其次用DOM保留的
+    const replyHTML = d.replies && d.replies.length > 0
+      ? d.replies.map(r => `<div class="comment-reply-item"><span class="comment-reply-name">${r.name}</span>回复：${r.text}</div>`).join('')
+      : (existingReplies[d.index] || '');
+    item.innerHTML = `
+      <div class="comment-avatar" style="background:${c}22">${COMMENT_AVATARS[d.index % COMMENT_AVATARS.length]}</div>
+      <div class="comment-body">
+        <div class="comment-sender">
+          <span>${getFanNickname(d.index)}</span>
+          <span class="dm-type-badge" style="background:${c}22;color:${c}">${typeObj.type}</span>
+          <span class="comment-floor">${isPinned?'📌 置顶':'第'+(floor+1)+'楼'}</span>
+          ${isPinned?'<span class="pinned-badge">置顶</span>':''}
+        </div>
+        <div class="comment-text">${d.text}${d.authorLiked ? ' <span class="author-liked-badge">作者赞过</span>' : ''}</div>
+        <div class="comment-actions">
+          <button class="comment-like-btn ${d.authorLiked ? 'liked' : ''}" onclick="toggleCommentLike(this,${d.index})">
+            <span class="like-heart">${d.authorLiked ? '❤️' : '🤍'}</span>
+            <span class="like-count">${d.likes}</span>
+          </button>
+          <button class="comment-reply-btn" onclick="openReplyCompose('${d.text.replace(/'/g,"\\'")}',this.closest('.comment-item'))">↩ 回复</button>
+        </div>
+        ${replyHTML ? `<div class="comment-reply-area">${replyHTML}</div>` : ''}
+      </div>`;
+    listEl.appendChild(item);
+    bindLongPress(item, (e) => { const t = e.touches?.[0] || e; showContextMenu(t.clientX, t.clientY, 'comment', d.text, item); });
+  });
+}
+
+function toggleCommentLike(btn, idx) {
+  const source = window._commentData;
+  if (!source) return;
+  const d = source[idx];
+  if (!d) return;
+  d.authorLiked = !d.authorLiked;
+  d.likes = d.authorLiked ? d.likes + 1 : d.likes - 1;
+  if (d.authorLiked) showToast('❤️ 点赞成功！', 1500);
+  renderCommentList();
+}
+
+// ── 多图上传 ──
+function handleMultiPhoto(e){
+  const files=Array.from(e.target.files);const rem=9-uploadedPhotos.length;
+  if(rem<=0){showToast('最多只能选9张图片');return;}
+  const toAdd=files.slice(0,rem);let loaded=0;
+  toAdd.forEach(f=>{const r=new FileReader();r.onload=ev=>{uploadedPhotos.push(ev.target.result);loaded++;if(loaded===toAdd.length)renderPhotoGrid();};r.readAsDataURL(f);});
+  e.target.value='';
+}
+function renderPhotoGrid(){
+  const grid=document.getElementById('photoGrid'),addBtn=document.getElementById('photoAddBtn'),count=uploadedPhotos.length;
+  grid.innerHTML='';
+  const cols=count<=1?1:count===3?3:count<=4?2:3;
+  grid.style.gridTemplateColumns=`repeat(${cols},1fr)`;
+  uploadedPhotos.forEach((url,i)=>{
+    const item=document.createElement('div');
+    item.className=count===1?'pg-item single':'pg-item square';
+    // 用createElement赋src，兼容手机浏览器
+    const img=document.createElement('img');
+    img.alt='';
+    img.style.width='100%';img.style.height='100%';img.style.objectFit=count===1?'contain':'cover';img.style.display='block';
+    img.src=url;
+    img.onclick=()=>openLightbox(i);
+    const rmBtn=document.createElement('button');
+    rmBtn.className='pg-remove';rmBtn.textContent='×';
+    rmBtn.onclick=(e)=>removePhoto(i,e);
+    item.appendChild(img);item.appendChild(rmBtn);
+    grid.appendChild(item);
+  });
+  addBtn.style.display=count>=9?'none':'flex';
+  addBtn.innerHTML=`<input type="file" id="photoFileInput" accept="image/*" multiple onchange="handleMultiPhoto(event)" style="display:none">${count>0?`🖼️ 继续添加（还可选${9-count}张）`:'🖼️ 添加图片（最多9张）'}`;
+}
+function removePhoto(i,e){e.stopPropagation();uploadedPhotos.splice(i,1);renderPhotoGrid();}
+
+// ── 灯箱 ──
+let lbPhotos=[];
+function openLightbox(i){lbPhotos=uploadedPhotos;lightboxIndex=i;updateLightbox();document.getElementById('lightbox').classList.add('open');}
+function openLightboxFrom(urls,i){lbPhotos=urls;lightboxIndex=i;updateLightbox();document.getElementById('lightbox').classList.add('open');}
+function updateLightbox(){
+  document.getElementById('lightboxImg').src=lbPhotos[lightboxIndex];
+  document.getElementById('lightboxCounter').textContent=lbPhotos.length>1?`${lightboxIndex+1} / ${lbPhotos.length}`:'';
+  document.querySelector('.lightbox-prev').style.display=lbPhotos.length>1?'flex':'none';
+  document.querySelector('.lightbox-next').style.display=lbPhotos.length>1?'flex':'none';
+}
+function lightboxNav(dir,e){e.stopPropagation();lightboxIndex=(lightboxIndex+dir+lbPhotos.length)%lbPhotos.length;updateLightbox();}
+function closeLightbox(e){if(e.target===document.getElementById('lightbox'))document.getElementById('lightbox').classList.remove('open');}
+
+// ── 营业 ──
+function initPostTab(){
+  const grid=document.getElementById('categoryGrid');grid.innerHTML='';selectedCategories=[];
+  CATEGORIES.forEach(cat=>{
+    const btn=document.createElement('button');btn.className='cat-btn';
+    btn.innerHTML=`<div class="cat-icon">${cat.icon}</div><div class="cat-label">${cat.label}</div>`;
+    btn.onclick=()=>{btn.classList.toggle('selected');if(btn.classList.contains('selected'))selectedCategories.push(cat);else selectedCategories=selectedCategories.filter(c=>c.label!==cat.label);};
+    grid.appendChild(btn);
+  });
+}
+
+async function publishPost(){
+  const captionInput=document.getElementById('postCaption').value.trim();
+  const customCat=document.getElementById('customCatInput').value.trim();
+  const allCatLabels=[...selectedCategories.map(c=>c.label),...customTags];
+  const allCatIcons=selectedCategories.map(c=>c.icon).join(' ');
+  if(!captionInput&&uploadedPhotos.length===0&&allCatLabels.length===0){alert('请至少填写文案、选择图片或选择类别中的一项～');return;}
+  const captionForAI=captionInput||(allCatLabels.length>0?allCatLabels.join('、'):'日常');
+  const caption=captionInput;
+  const publishBtn=document.getElementById('publishBtn');publishBtn.disabled=true;publishBtn.textContent='发布中…';
+  document.getElementById('postForm').style.display='none';
+
+  // 先渲染文字部分
+  const likes=Math.floor(Math.random()*400000+50000);
+  const comments=Math.floor(Math.random()*80+10);
+  const shares=Math.floor(Math.random()*50000+5000);
+  const catTagsHTML=allCatLabels.length>0?`<div style="padding:6px 16px 0;display:flex;flex-wrap:wrap;gap:6px">${allCatLabels.map(l=>`<span style="background:var(--member-color)22;color:var(--member-color);font-size:11px;padding:2px 10px;border-radius:20px">#${l}</span>`).join('')}</div>`:'';
+  const now=new Date();
+  const timeStr=`${now.getMonth()+1}/${now.getDate()} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+
+  const result=document.getElementById('postResult');result.style.display='block';
+  result.innerHTML=`<div class="post-result"><div id="postImgArea"></div>${catTagsHTML}${caption?`<div style="padding:12px 16px 8px;font-size:14px;line-height:1.6;color:var(--text)">${caption}</div>`:''}<div style="padding:2px 16px 10px;font-size:11px;color:var(--text2)">${timeStr}</div><div class="post-status">营业照发布成功！粉丝正在赶来～ 💕</div><div class="post-stats-row"><span>❤️ ${(likes/10000).toFixed(1)}万</span><span>💬 ${comments}</span><span>🔁 ${shares.toLocaleString()}</span></div><div style="padding:0 16px 14px"><button onclick="resetPost()" style="width:100%;padding:11px;background:transparent;border:1.5px solid #333344;border-radius:12px;color:var(--text2);font-family:inherit;font-size:14px;cursor:pointer">再发一条 ✍️</button></div></div>`;
+
+  // 用createElement插入图片，手机兼容
+  const imgArea=document.getElementById('postImgArea');
+  if(uploadedPhotos.length===1){
+    const wrap=document.createElement('div');wrap.style.cssText='padding:8px';
+    const img=document.createElement('img');
+    img.style.cssText='width:100%;height:auto;max-height:420px;object-fit:contain;border-radius:12px;background:#111;display:block;cursor:pointer';
+    img.src=uploadedPhotos[0];img.onclick=()=>openLightbox(0);
+    wrap.appendChild(img);imgArea.appendChild(wrap);
+  }else if(uploadedPhotos.length>1){
+    const cols=uploadedPhotos.length===3?3:uploadedPhotos.length<=4?2:3;
+    const grid=document.createElement('div');
+    grid.style.cssText=`display:grid;grid-template-columns:repeat(${cols},1fr);gap:3px;padding:8px`;
+    uploadedPhotos.forEach((url,i)=>{
+      const cell=document.createElement('div');cell.style.cssText='aspect-ratio:1;overflow:hidden;border-radius:6px;cursor:pointer';
+      cell.onclick=()=>openLightbox(i);
+      const img=document.createElement('img');img.style.cssText='width:100%;height:100%;object-fit:cover';
+      img.src=url;cell.appendChild(img);grid.appendChild(cell);
+    });
+    imgArea.appendChild(grid);
+  }else if(allCatIcons){
+    imgArea.innerHTML=`<div style="font-size:48px;text-align:center;padding:24px 0">${allCatIcons}</div>`;
+  }else{
+    imgArea.innerHTML=`<div style="font-size:48px;text-align:center;padding:24px 0">📸</div>`;
+  }
+
+  fanCount+=Math.floor(likes/8);updateFanCount();
+  const stream=document.getElementById('commentStream');
+  stream.innerHTML=`<div class="loading-comments">粉丝正在赶来评论<span class="loading-dot">.</span><span class="loading-dot">.</span><span class="loading-dot">.</span></div>`;
+
+  const catLabelForAI=allCatLabels.length>0?allCatLabels[0]:'日常';
+  const savedPhotos=[...uploadedPhotos];
+
+  function renderComments(aiComments){
+    const commentData=aiComments.map((text,i)=>({text,likes:Math.floor(Math.random()*800+10),index:i,authorLiked:false,replies:[]}));
+    // 热评第一取likes最高的那条，和commentData保持同步
+    const topIdx=commentData.reduce((mi,d,i)=>d.likes>commentData[mi].likes?i:mi,0);
+    const histEntry={
+      imageUrls:savedPhotos,categoryIcons:allCatIcons,categoryLabels:allCatLabels,caption,
+      likes:`${(likes/10000).toFixed(1)}万`,comments,shares:shares.toLocaleString(),time:timeStr,
+      topComment:commentData[topIdx].text,
+      topCommentLikes:commentData[topIdx].likes,
+      topCommentIdx:topIdx,
+      topLiked:false,
+      commentData
+    };
+    postHistory.push(histEntry);
+    updateHistoryCount();
+    window._commentData=commentData;
+    window._currentSort='likes';
+    stream.innerHTML='';
+    const sortBar=document.createElement('div');sortBar.className='comment-sort-bar';
+    sortBar.innerHTML=`<span>排序：</span><button class="sort-btn" data-sort="time" onclick="setCommentSort('time',this)">时间</button><button class="sort-btn active" data-sort="likes" onclick="setCommentSort('likes',this)">热度</button>`;
+    stream.appendChild(sortBar);
+    const listEl=document.createElement('div');listEl.id='commentList';stream.appendChild(listEl);
+    renderCommentList();
+  }
+
+  try{
+    const aiComments=await generateComments(captionForAI,catLabelForAI,selectedMember.name);
+    renderComments(aiComments);
+  }catch(e){
+    const msg=e.message||'';const retryMatch=msg.match(/retry in ([\d.]+)s/i);
+    const waitSec=retryMatch?Math.ceil(parseFloat(retryMatch[1]))+2:15;
+    stream.innerHTML=`<div class="loading-comments">粉丝太多挤进来了，${waitSec}秒后自动重试<span class="loading-dot">.</span><span class="loading-dot">.</span><span class="loading-dot">.</span></div>`;
+    setTimeout(async()=>{
+      try{const aiComments=await generateComments(captionForAI,catLabelForAI,selectedMember.name);renderComments(aiComments);}
+      catch(e2){stream.innerHTML=`<div class="loading-comments">评论加载失败：${e2.message}</div>`;}
+    },waitSec*1000);
+  }
+}
+
+function resetPost(){
+  document.getElementById('postForm').style.display='block';
+  document.getElementById('postResult').style.display='none';
+  document.getElementById('commentStream').innerHTML='';
+  document.getElementById('postCaption').value='';
+  document.getElementById('customCatInput').value='';
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));
+  selectedCategories=[];uploadedPhotos=[];customTags=[];
+  document.getElementById('photoGrid').innerHTML='';
+  document.getElementById('customTagsRow').innerHTML='';
+  document.getElementById('customCatInput').value='';
+  document.getElementById('customCatInput').style.display='block';
+  const addBtn=document.getElementById('photoAddBtn');addBtn.style.display='flex';
+  addBtn.innerHTML='<input type="file" id="photoFileInput" accept="image/*" multiple onchange="handleMultiPhoto(event)" style="display:none">🖼️ 添加图片（最多9张）';
+  if(commentInterval)clearInterval(commentInterval);
+  document.getElementById('publishBtn').disabled=false;document.getElementById('publishBtn').textContent='发布 ✨';
+}
+
+async function generateComments(caption,category,idolName){
+  const prompt=`你是一个追星粉丝群体，正在给偶像${idolName}的营业帖子写评论。偶像发的营业类型是【${category}】，配文是：「${caption}」。请根据配文内容，生成15条真实的、有针对性的粉丝评论。要求：评论必须紧扣配文内容，不能答非所问；评论风格多样，包括撒娇、心疼、加油鼓励、共情、夸赞、调侃、妈妈粉、梦女等；语气要像真实追星女孩，自然口语化；每条评论10-30字；直接输出评论内容，每条一行，不要编号引号。`;
+  const apiKey='bce-v3/ALTAK-dmPl76gVS1GHSAogoaVAc/1670fb494bfc8a8f5f3241ebc2a2533925ed55b6';
+  const res=await fetch('https://qianfan.baidubce.com/v2/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},body:JSON.stringify({model:'deepseek-v3',messages:[{role:'user',content:prompt}]})});
+  const data=await res.json();
+  if(!data.choices||!data.choices[0])throw new Error(data.error?.message||JSON.stringify(data));
+  const lines=data.choices[0].message.content.split('\n').map(l=>l.trim()).filter(l=>l.length>0&&l.length<60);
+  return lines.slice(0,15);
+}
+
+// ── 历史营业 ──
+function updateHistoryCount(){const el=document.getElementById('historyCount');if(el)el.textContent=postHistory.length>0?`${postHistory.length} 条`:'暂无记录';}
+
+function buildImgHTML(post){
+  if(post.imageUrls&&post.imageUrls.length===1){
+    return`<img class="history-item-img" src="${post.imageUrls[0]}" onclick="openLightboxFrom(${JSON.stringify(post.imageUrls)},0)">`;
+  }else if(post.imageUrls&&post.imageUrls.length>1){
+    const cols=post.imageUrls.length===3?3:post.imageUrls.length<=4?2:3;
+    return`<div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:3px;margin-bottom:10px">${post.imageUrls.map((url,i)=>`<div style="aspect-ratio:1;overflow:hidden;border-radius:6px;cursor:pointer" onclick="openLightboxFrom(${JSON.stringify(post.imageUrls)},${i})"><img src="${url}" style="width:100%;height:100%;object-fit:cover"></div>`).join('')}</div>`;
+  }else if(post.categoryIcons){
+    return`<div class="history-item-emoji">${post.categoryIcons}</div>`;
+  }
+  return'';
+}
+
+function openHistory(){
+  document.getElementById('page-history').style.display='block';
+  const list=document.getElementById('historyList');
+  if(postHistory.length===0){list.innerHTML='<div class="history-empty">还没有营业记录～快去发第一条吧！</div>';return;}
+  list.innerHTML='';
+  [...postHistory].reverse().forEach((post,ri)=>{
+    const realIdx=postHistory.length-1-ri;
+    const div=document.createElement('div');div.className='history-item';div.style.cursor='pointer';
+    const catTags=post.categoryLabels&&post.categoryLabels.length>0?post.categoryLabels.map(l=>`<span style="background:var(--member-color)22;color:var(--member-color);font-size:10px;padding:1px 8px;border-radius:20px">#${l}</span>`).join(' '):'';
+    // 热评第一区域（含点赞）
+    const topCommentHTML=post.topComment?`
+      <div class="history-top-comment">
+        <div class="history-top-label">🏆 热评第一</div>
+        <div style="margin-bottom:6px;font-size:13px">${post.topComment}</div>
+        <button class="comment-like-btn ${post.topLiked?'liked':''}" onclick="toggleTopLike(event,${realIdx})">
+          <span class="like-heart">${post.topLiked?'❤️':'🤍'}</span>
+          <span class="like-count">${post.topCommentLikes||0}</span>
+        </button>
+      </div>`:'';
+    div.innerHTML=`${buildImgHTML(post)}${catTags?`<div style="margin-bottom:8px;display:flex;flex-wrap:wrap;gap:4px">${catTags}</div>`:''}${post.caption?`<div class="history-item-caption">${post.caption}</div>`:''}<div class="history-item-meta"><span>❤️ ${post.likes}</span><span>💬 ${post.comments}</span><span>🔁 ${post.shares}</span><span style="margin-left:auto">${post.time}</span></div>${topCommentHTML}<div style="font-size:12px;color:var(--text2);text-align:right;margin-top:8px">查看全部评论 →</div>`;
+    div.onclick=(e)=>{if(!e.target.closest('img')&&!e.target.closest('.comment-like-btn'))openHistoryDetail(realIdx);};
+    list.appendChild(div);
+  });
+}
+
+function toggleTopLike(e, idx){
+  e.stopPropagation();
+  const post=postHistory[idx];if(!post)return;
+  post.topLiked=!post.topLiked;
+  const delta=post.topLiked?1:-1;
+  post.topCommentLikes=(post.topCommentLikes||0)+delta;
+  // 同步到commentData里对应的评论
+  if(post.commentData&&post.topCommentIdx!=null){
+    post.commentData[post.topCommentIdx].likes+=delta;
+    post.commentData[post.topCommentIdx].authorLiked=post.topLiked;
+  }
+  if(post.topLiked)showToast('❤️ 点赞成功！',1500);
+  openHistory();
+}
+
+function openHistoryDetail(idx){
+  const post=postHistory[idx];if(!post)return;
+  const detail=document.getElementById('page-history-detail');
+  const catTags=post.categoryLabels&&post.categoryLabels.length>0?post.categoryLabels.map(l=>`<span style="background:var(--member-color)22;color:var(--member-color);font-size:11px;padding:2px 8px;border-radius:20px">#${l}</span>`).join(' '):'';
+  document.getElementById('hdPostBody').innerHTML=`${buildImgHTML(post)}${catTags?`<div style="margin-bottom:10px;display:flex;flex-wrap:wrap;gap:4px">${catTags}</div>`:''}${post.caption?`<div style="font-size:14px;line-height:1.6;margin-bottom:8px">${post.caption}</div>`:''}<div style="font-size:12px;color:var(--text2);display:flex;gap:16px;margin-bottom:4px"><span>❤️ ${post.likes}</span><span>💬 ${post.comments}</span><span>🔁 ${post.shares}</span><span style="margin-left:auto">${post.time}</span></div>`;
+  const hd=document.getElementById('hdComments');hd.innerHTML='';
+  if(post.commentData&&post.commentData.length>0){
+    const sb=document.createElement('div');sb.className='comment-sort-bar';sb.style.padding='8px 16px 10px';
+    sb.innerHTML=`<span>排序：</span><button class="sort-btn" data-sort="time" onclick="setCommentSort('time',this)">时间</button><button class="sort-btn active" data-sort="likes" onclick="setCommentSort('likes',this)">热度</button>`;
+    hd.appendChild(sb);
+    const listEl=document.createElement('div');listEl.id='commentList';listEl.style.padding='0 16px';
+    hd.appendChild(listEl);
+    window._commentData=post.commentData;
+    window._currentSort='likes';
+    detail.classList.add('open');
+    // 直接用元素引用渲染，不依赖id查找
+    setTimeout(()=>renderCommentListEl(post.commentData, listEl), 80);
+  }else{
+    // 评论加载失败时显示提示，不显示空白
+    hd.innerHTML=`<div style="padding:24px 16px;text-align:center">
+      <div style="color:var(--text2);font-size:14px;margin-bottom:8px">该条营业的评论未能加载</div>
+      ${post.topComment?`<div class="history-top-comment" style="text-align:left"><div class="history-top-label">🏆 热评第一</div><div style="font-size:13px">${post.topComment}</div></div>`:''}
+    </div>`;
+    detail.classList.add('open');
+  }
+}
+
+function closeHistoryDetail(){
+  document.getElementById('page-history-detail').classList.remove('open');
+  window._commentData=null;
+}
+
+function closeHistory(){document.getElementById('page-history').style.display='none';}
+
+// ── 口号 ──
+function initSloganTab(){
+  const area=document.getElementById('sloganArea');
+  const slogans=SLOGANS[selectedMember.name]||['少年最闪亮','努力最耀眼'];
+  area.innerHTML=`<p class="slogan-label">✦ 专属应援口号 ✦</p>${slogans.map(s=>`<div class="slogan-card"><div class="slogan-deco">✦</div><div class="slogan-text">${s}</div></div>`).join('')}<p class="slogan-sub">保护色：${selectedMember.colorName}<br>粉丝名：${fanName}<br><br>愿你的少年永远发光 ✨</p>`;
+}
+
+initMemberGrid();
+
+// 检测存档，有就直接恢复
+if(loadArchive()){
+  // 自动进入游戏
+  document.getElementById('page-home').style.display='none';
+  const main=document.getElementById('page-main');main.style.display='flex';
+  document.documentElement.style.setProperty('--member-color',selectedMember.color);
+  const av=document.getElementById('mainAvatar');av.textContent=selectedMember.animal;av.style.background=selectedMember.color+'22';av.style.borderColor=selectedMember.color;
+  document.getElementById('mainName').innerHTML=`${selectedMember.name}<span class="fan-badge">${fanName}</span>`;
+  document.getElementById('colorDot').style.background=selectedMember.color;
+  document.getElementById('colorName').textContent=selectedMember.colorName;
+  document.getElementById('displayFanName').textContent=fanName;
+  document.getElementById('fanCount').textContent=fanCount.toLocaleString();
+  const activeTab=document.querySelector('.tab.active');activeTab.style.borderBottomColor=selectedMember.color;activeTab.style.color=selectedMember.color;
+  document.getElementById('dmFab').classList.add('visible');
+  initDmTab();initPostTab();initSloganTab();initCustomTagInput();
+  updateHistoryCount();
+  showToast('📂 已恢复上次存档',2000);
+}
+</script>
+</body>
+</html>
